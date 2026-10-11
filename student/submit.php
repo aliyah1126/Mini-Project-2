@@ -86,7 +86,20 @@ include "../includes/header.php";
                 <div class="mb-3">
                     <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
                     <select name="category_id" class="form-select" required>
-                        <option value="">-- Select Category --</option>
+    <option value="">-- Select Category --</option>
+    <option value="Web Application">Web Application</option>
+    <option value="Mobile Application">Mobile Application</option>
+    <option value="System Administration">System Administration</option>
+    <option value="Database & Analytics">Database & Analytics</option>
+    <option value="Networking & Security">Networking & Security</option>
+
+    <!-- Pilihan dari Database -->
+    <?php if ($categories && $categories->num_rows > 0): ?>
+        <?php while ($cat = $categories->fetch_assoc()): ?>
+            <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['category_name']) ?></option>
+        <?php endwhile; ?>
+    <?php endif; ?>
+</select>
                         <?php while ($cat = $categories->fetch_assoc()): ?>
                             <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['category_name']) ?></option>
                         <?php endwhile; ?>
