@@ -3,50 +3,29 @@ require "../config/db.php";
 require "../includes/auth.php";
 require_role("student");
 
+$user_id = $_SESSION["user_id"];
+$count_res = $conn->query("SELECT COUNT(*) as total FROM projects WHERE user_id = $user_id");
+$total_projects = $count_res->fetch_assoc()['total'] ?? 0;
+
 $page_title = "Student Dashboard";
 $asset_prefix = "../";
 include "../includes/header.php";
 ?>
 
-<div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-    <i class="bi bi-check-circle-fill me-2"></i> Welcome back, <strong><?= htmlspecialchars($_SESSION["full_name"]) ?></strong>!
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <h2 class="fw-bold mb-0">Project Showcase Directory</h2>
-        <p class="text-muted">Explore student portfolio submissions and FYP projects.</p>
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card bg-primary text-white p-4 border-0 shadow-sm">
+            <h3>Welcome back, <?= htmlspecialchars($_SESSION["full_name"]) ?>!</h3>
+            <p class="mb-0">You have submitted <strong><?= $total_projects ?></strong> project(s) to the portfolio system.</p>
+        </div>
     </div>
-    <a href="submit.php" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Submit New Project</a>
-</div>
-
-<div class="card p-3 mb-4 border-0 shadow-sm">
-    <div class="input-group">
-        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-        <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Live search by project title, tech stack, or student name...">
+    <div class="col-md-6 d-flex align-items-center justify-content-end">
+        <a href="submit.php" class="btn btn-lg btn-success fw-bold shadow-sm"><i class="bi bi-plus-circle"></i> + Submit New Project</a>
     </div>
 </div>
 
-<div id="projectContainer" class="row g-4">
-    <!-- Projects loaded via AJAX -->
+<div class="text-center mt-5">
+    <a href="../index.php" class="btn btn-outline-primary"><i class="bi bi-globe"></i> Explore Public Project Showcase Directory</a>
 </div>
-
-<script>
-function fetchProjects(query = '') {
-    fetch('fetch_projects.php?q=' + encodeURIComponent(query))
-        .then(res => res.text())
-        .then(html => {
-            document.getElementById('projectContainer').innerHTML = html;
-        });
-}
-
-document.getElementById('searchInput').addEventListener('keyup', function() {
-    fetchProjects(this.value);
-});
-
-// Initial Load
-fetchProjects();
-</script>
 
 <?php include "../includes/footer.php"; ?>

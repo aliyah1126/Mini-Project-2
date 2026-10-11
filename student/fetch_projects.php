@@ -1,55 +1,47 @@
 <?php
-require "../config/db.php";
-require "../includes/auth.php";
-require_role("student");
+require "config/db.php";
 
-$q = trim($_GET["q"] ?? "");
+$search = trim($_GET['search'] ?? '');
 
-$sql = "SELECT p.*, c.category_name, u.full_name 
-        FROM projects p 
-        JOIN categories c ON p.category_id = c.id 
-        JOIN users u ON p.user_id = u.id";
+$sql = "SELECT projects.*, users.full_name, categories.category_name 
+        FROM projects 
+        LEFT JOIN users ON projects.user_id = users.id 
+        LEFT JOIN categories ON projects.category_id = categories.id";
 
-if ($q !== "") {
-    $sql .= " WHERE p.title LIKE ? OR p.tech_stack LIKE ? OR u.full_name LIKE ?";
-    $stmt = $conn->prepare($sql);
-    $searchTerm = "%" . $q . "%";
-    $stmt->bind_param("sss", $searchTerm, $searchTerm, $searchTerm);
+if (!empty($search)) {
+    $search_clean = $conn->real_escape_string($search);
+    $sql .= " WHERE projects.title LIKE '%$search_clean%' 
+              OR projects.tech_stack LIKE '%$search_clean%' 
+              OR users.full_name LIKE '%$search_clean%'";
+}
+
+$sql .= " ORDER BY projects.id DESC";
+$projects = $conn->query($sql);
+
+if ($projects && $projects->num_rows > 0) {
+    while ($p = $projects->fetch_assoc()) {
+        $date = date("d/m/Y", strtotime($p['created_at']));
+        echo '<div class="col-md-4 mb-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-primary">' . htmlspecialchars($p['category_name'] ?? 'General') . '</span>
+                            <small class="text-muted"><i class="bi bi-clock"></i> ' . $date . '</small>
+                        </div>
+                        <h5 class="card-title fw-bold text-dark">' . htmlspecialchars($p['title']) . '</h5>
+                        <p class="card-text small text-secondary mb-2">' . htmlspecialchars($p['description'] ?? 'No description provided.') . '</p>
+                        <p class="card-text mb-1"><strong>Tech Stack:</strong> <span class="badge bg-light text-dark border">' . htmlspecialchars($p['tech_stack'] ?? '-') . '</span></p>
+                    </div>
+                    <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
+                        <small class="text-muted"><i class="bi bi-person-fill"></i> ' . htmlspecialchars($p['full_name'] ?? 'Unknown') . '</small>';
+        if (!empty($p['file_path'])) {
+            echo '<a href="download.php?id=' . $p['id'] . '" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i> Report</a>';
+        }
+        echo '      </div>
+                </div>
+              </div>';
+    }
 } else {
-    $sql .= " ORDER BY p.created_at DESC";
-    $stmt = $conn->prepare($sql);
+    echo '<div class="col-12"><div class="alert alert-warning text-center">No matching projects found.</div></div>';
 }
-
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows === 0) {
-    echo '<div class="col-12"><div class="alert alert-warning">No matching projects found.</div></div>';
-    exit;
-}
-
-while ($row = $result->fetch_assoc()):
 ?>
-<div class="col-md-4">
-    <div class="card h-100 shadow-sm border-0 card-project">
-        <div class="card-body d-flex flex-column">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-primary"><?= htmlspecialchars($row["category_name"]) ?></span>
-                <small class="text-muted"><i class="bi bi-clock"></i> <?= date("n/j/Y", strtotime($row["created_at"])) ?></small>
-            </div>
-            <h5 class="card-title fw-bold"><?= htmlspecialchars($row["title"]) ?></h5>
-            <p class="card-text text-muted flex-grow-1" style="font-size: 0.9rem;">
-                <?= htmlspecialchars(substr($row["description"], 0, 100)) ?>...
-            </p>
-            <div class="mb-3">
-                <small class="fw-bold d-block text-secondary">Tech Stack:</small>
-                <span class="badge bg-light text-dark border"><?= htmlspecialchars($row["tech_stack"]) ?></span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                <small class="text-muted"><i class="bi bi-person"></i> <?= htmlspecialchars($row["full_name"]) ?></small>
-                <a href="../download.php?id=<?= $row["id"] ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i> Report</a>
-            </div>
-        </div>
-    </div>
-</div>
-<?php endwhile; ?>

@@ -51,13 +51,11 @@ $asset_prefix = "";
 include "includes/header.php";
 ?>
 
-<div class="auth-card card p-4 mx-auto my-4" style="max-width: 480px;">
+<div class="auth-card card p-4 mx-auto my-4 shadow-sm border-0" style="max-width: 480px;">
     <h3 class="text-center text-primary fw-bold mb-3"><i class="bi bi-person-plus-fill"></i> Create Account</h3>
-
     <?php if ($error): ?><div class="alert alert-danger"><?= htmlspecialchars($error) ?></div><?php endif; ?>
     <?php if ($success): ?><div class="alert alert-success"><?= htmlspecialchars($success) ?></div><?php endif; ?>
-
-    <form method="POST" class="client-validate" novalidate>
+    <form method="POST" novalidate>
         <div class="mb-3">
             <label class="form-label">Full Name</label>
             <input type="text" name="full_name" class="form-control" required>

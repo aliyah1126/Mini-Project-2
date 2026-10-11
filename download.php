@@ -16,7 +16,7 @@ if ($_SESSION["role"] === "admin") {
 $st->execute();
 $r = $st->get_result()->fetch_assoc();
 
-if (!$r) {
+if (!$r || empty($r["file_path"])) {
     http_response_code(404);
     exit("File not found or permission denied.");
 }

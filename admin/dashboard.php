@@ -3,71 +3,47 @@ require "../config/db.php";
 require "../includes/auth.php";
 require_role("admin");
 
-$studentsCount = $conn->query("SELECT COUNT(*) as cnt FROM users WHERE role='student'")->fetch_assoc()["cnt"];
-$categoriesCount = $conn->query("SELECT COUNT(*) as cnt FROM categories")->fetch_assoc()["cnt"];
-$submissionsCount = $conn->query("SELECT COUNT(*) as cnt FROM projects")->fetch_assoc()["cnt"];
+$student_count = $conn->query("SELECT COUNT(*) as cnt FROM users WHERE role='student'")->fetch_assoc()['cnt'];
+$category_count = $conn->query("SELECT COUNT(*) as cnt FROM categories")->fetch_assoc()['cnt'];
+$submission_count = $conn->query("SELECT COUNT(*) as cnt FROM projects")->fetch_assoc()['cnt'];
 
-$recentStmt = $conn->query("SELECT p.*, u.full_name, c.category_name 
-                            FROM projects p 
-                            JOIN users u ON p.user_id = u.id 
-                            JOIN categories c ON p.category_id = c.id 
-                            ORDER BY p.created_at DESC LIMIT 5");
+$recent = $conn->query("SELECT projects.*, users.full_name, categories.category_name FROM projects LEFT JOIN users ON projects.user_id = users.id LEFT JOIN categories ON projects.category_id = categories.id ORDER BY projects.id DESC LIMIT 5");
 
 $page_title = "Admin Dashboard";
 $asset_prefix = "../";
 include "../includes/header.php";
 ?>
 
-<div class="alert alert-success alert-dismissible fade show mb-4">
-    <i class="bi bi-check-circle"></i> Welcome back, <strong>Admin</strong>!
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<div class="mb-4">
+    <h2>Admin Overview</h2>
+    <p class="text-muted">Lecturer & Coordinator Evaluation Portal</p>
 </div>
 
-<h3 class="fw-bold"><i class="bi bi-speedometer2"></i> Admin Overview</h3>
-<p class="text-muted mb-4">Lecturer & Coordinator Evaluation Portal</p>
-
-<div class="row g-3 mb-4">
+<div class="row g-4 mb-4">
     <div class="col-md-4">
         <div class="card bg-primary text-white p-3 border-0 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-uppercase mb-1">Students</h6>
-                    <h2 class="fw-bold mb-0"><?= $studentsCount ?></h2>
-                </div>
-                <i class="bi bi-people fs-1 opacity-50"></i>
-            </div>
+            <h6 class="text-uppercase">Students</h6>
+            <h2 class="fw-bold"><?= $student_count ?></h2>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card bg-success text-white p-3 border-0 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-uppercase mb-1">Categories</h6>
-                    <h2 class="fw-bold mb-0"><?= $categoriesCount ?></h2>
-                </div>
-                <i class="bi bi-layers fs-1 opacity-50"></i>
-            </div>
+            <h6 class="text-uppercase">Categories</h6>
+            <h2 class="fw-bold"><?= $category_count ?></h2>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card bg-info text-white p-3 border-0 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-uppercase mb-1">Submissions</h6>
-                    <h2 class="fw-bold mb-0"><?= $submissionsCount ?></h2>
-                </div>
-                <i class="bi bi-folder-check fs-1 opacity-50"></i>
-            </div>
+            <h6 class="text-uppercase">Submissions</h6>
+            <h2 class="fw-bold"><?= $submission_count ?></h2>
         </div>
     </div>
 </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white py-3">
-        <h5 class="fw-bold mb-0">Recent Submissions</h5>
-    </div>
+<div class="card border-0 shadow-sm p-4">
+    <h4 class="fw-bold mb-3">Recent Submissions</h4>
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
                     <th>Student Name</th>
@@ -77,12 +53,12 @@ include "../includes/header.php";
                 </tr>
             </thead>
             <tbody>
-                <?php while ($row = $recentStmt->fetch_assoc()): ?>
+                <?php while ($r = $recent->fetch_assoc()): ?>
                     <tr>
-                        <td class="fw-bold"><?= htmlspecialchars($row["full_name"]) ?></td>
-                        <td><?= htmlspecialchars($row["title"]) ?></td>
-                        <td><span class="badge bg-secondary"><?= htmlspecialchars($row["category_name"]) ?></span></td>
-                        <td><?= date("d M Y", strtotime($row["created_at"])) ?></td>
+                        <td class="fw-bold"><?= htmlspecialchars($r['full_name']) ?></td>
+                        <td><?= htmlspecialchars($r['title']) ?></td>
+                        <td><span class="badge bg-secondary"><?= htmlspecialchars($r['category_name'] ?? 'General') ?></span></td>
+                        <td><?= date("d M Y", strtotime($r['created_at'])) ?></td>
                     </tr>
                 <?php endwhile; ?>
             </tbody>

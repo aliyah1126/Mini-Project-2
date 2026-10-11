@@ -3,26 +3,27 @@ require "../config/db.php";
 require "../includes/auth.php";
 require_role("admin");
 
-$sql = "SELECT p.*, u.full_name, u.email, c.category_name 
-        FROM projects p 
-        JOIN users u ON p.user_id = u.id 
-        JOIN categories c ON p.category_id = c.id 
-        ORDER BY p.created_at DESC";
-$result = $conn->query($sql);
+$sql = "SELECT projects.*, users.full_name, users.email, categories.category_name 
+        FROM projects 
+        LEFT JOIN users ON projects.user_id = users.id 
+        LEFT JOIN categories ON projects.category_id = categories.id 
+        ORDER BY projects.id DESC";
+$submissions = $conn->query($sql);
+$total = $submissions ? $submissions->num_rows : 0;
 
-$page_title = "All Submissions";
+$page_title = "All Student Submissions";
 $asset_prefix = "../";
 include "../includes/header.php";
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold"><i class="bi bi-list-task"></i> All Student Submissions</h3>
-    <span class="badge bg-primary fs-6">Total: <?= $result->num_rows ?> Projects</span>
+    <h2>All Student Submissions</h2>
+    <span class="badge bg-primary fs-6">Total: <?= $total ?> Projects</span>
 </div>
 
-<div class="card border-0 shadow-sm">
+<div class="card border-0 shadow-sm p-3">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
                     <th>Student Name</th>
@@ -34,26 +35,30 @@ include "../includes/header.php";
                 </tr>
             </thead>
             <tbody>
-                <?php if ($result->num_rows === 0): ?>
-                    <tr><td colspan="6" class="text-center text-muted py-4">No submissions yet.</td></tr>
-                <?php else: ?>
-                    <?php while ($row = $result->fetch_assoc()): ?>
+                <?php if ($submissions && $submissions->num_rows > 0): ?>
+                    <?php while ($s = $submissions->fetch_assoc()): ?>
                         <tr>
                             <td>
-                                <strong><?= htmlspecialchars($row["full_name"]) ?></strong><br>
-                                <small class="text-muted"><?= htmlspecialchars($row["email"]) ?></small>
+                                <div class="fw-bold"><?= htmlspecialchars($s['full_name']) ?></div>
+                                <small class="text-muted"><?= htmlspecialchars($s['email']) ?></small>
                             </td>
-                            <td class="fw-bold text-primary"><?= htmlspecialchars($row["title"]) ?></td>
-                            <td><span class="badge bg-secondary"><?= htmlspecialchars($row["category_name"]) ?></span></td>
-                            <td><small><?= htmlspecialchars($row["tech_stack"]) ?></small></td>
+                            <td class="fw-bold text-primary"><?= htmlspecialchars($s['title']) ?></td>
+                            <td><span class="badge bg-secondary"><?= htmlspecialchars($s['category_name'] ?? 'General') ?></span></td>
+                            <td><?= htmlspecialchars($s['tech_stack'] ?? '-') ?></td>
                             <td>
-                                <a href="../download.php?id=<?= $row["id"] ?>" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-file-earmark-arrow-down"></i> File
-                                </a>
+                                <?php if (!empty($s['file_path'])): ?>
+                                    <a href="../download.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i> File</a>
+                                <?php else: ?>
+                                    <span class="text-muted small">None</span>
+                                <?php endif; ?>
                             </td>
-                            <td><small><?= date("d M Y, h:i A", strtotime($row["created_at"])) ?></small></td>
+                            <td><?= date("d M Y, h:i A", strtotime($s['created_at'])) ?></td>
                         </tr>
                     <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No student submissions found.</td>
+                    </tr>
                 <?php endif; ?>
             </tbody>
         </table>

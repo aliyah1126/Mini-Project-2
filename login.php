@@ -45,12 +45,10 @@ $asset_prefix = "";
 include "includes/header.php";
 ?>
 
-<div class="auth-card card p-4 mx-auto my-5" style="max-width: 420px;">
+<div class="auth-card card p-4 mx-auto my-5 shadow-sm border-0" style="max-width: 420px;">
     <h3 class="text-center text-primary fw-bold mb-3"><i class="bi bi-box-arrow-in-right"></i> Login</h3>
-
     <?php if ($error): ?><div class="alert alert-danger"><?= htmlspecialchars($error) ?></div><?php endif; ?>
-
-    <form method="POST" class="client-validate" novalidate>
+    <form method="POST" novalidate>
         <div class="mb-3">
             <label class="form-label">Email Address</label>
             <input type="email" name="email" class="form-control" required>
