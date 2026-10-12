@@ -8,7 +8,7 @@ $success = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $title = trim($_POST["title"] ?? "");
-    $category_id = intval($_POST["category_id"] ?? "");
+    $category_id = intval($_POST["category_id"] ?? 0);
     $tech_stack = trim($_POST["tech_stack"] ?? "");
     $description = trim($_POST["description"] ?? "");
     $user_id = $_SESSION["user_id"];
@@ -86,11 +86,6 @@ include "../includes/header.php";
                     <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
                     <select name="category_id" class="form-select" required>
     <option value="">-- Select Category --</option>
-    <option value="Web Application">Web Application</option>
-    <option value="Mobile Application">Mobile Application</option>
-    <option value="System Administration">System Administration</option>
-    <option value="Database & Analytics">Database & Analytics</option>
-    <option value="Networking & Security">Networking & Security</option>
 
     <!-- Pilihan dari Database -->
     <?php if ($categories && $categories->num_rows > 0): ?>
