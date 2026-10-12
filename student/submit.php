@@ -8,17 +8,16 @@ $success = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $title = trim($_POST["title"] ?? "");
-    $category_id = intval($_POST["category_id"] ?? 0);
+    $category_id = intval($_POST["category_id"] ?? "");
     $tech_stack = trim($_POST["tech_stack"] ?? "");
     $description = trim($_POST["description"] ?? "");
     $user_id = $_SESSION["user_id"];
 
     // Pengesahan Server-side
     if (empty($title) || empty($category_id)) {
-        $error = "Please fill in all required fields (Project Title and Category).";
+        $error = "Please fill in all required fields (Project Title and Category 2).";
     } else {
         $file_path = NULL;
-
         // Proses Muat Naik Fail (File Upload)
         if (isset($_FILES["document"]) && $_FILES["document"]["error"] === UPLOAD_ERR_OK) {
             $file_tmp = $_FILES["document"]["tmp_name"];
